@@ -249,14 +249,22 @@ SQ is a simpler quantization scheme that maps each float32 component to an
 
 ---
 
-## RQ — RabitQ Quantization
+## RQ — RaBitQ Quantization
 
-RabitQ is an alternative quantization method available as `IvfRq`. It provides
-a different accuracy/compression trade-off compared to PQ and SQ.
+RaBitQ is an alternative quantization method available as `IvfRq`. It
+quantizes each dimension independently into a small number of bits
+(default: 1 bit per dimension, giving 32× compression over float32). Unlike
+PQ, RQ does not require `dim` to be divisible by `num_sub_vectors`; unlike
+SQ, it keeps the query in full precision and uses asymmetric distance
+computation.
 
-| Parameter  | Default | Description                         |
-|------------|---------|-------------------------------------|
-| `num_bits` | —       | Bits for RabitQ quantization        |
+| Parameter  | Default | Description                                  |
+|------------|---------|----------------------------------------------|
+| `num_bits` | `1`     | Bits per dimension for RaBitQ quantization   |
+
+For a dedicated walkthrough of IVF_RQ — parameters, when to pick it over PQ
+or SQ, code examples in all three languages, and the mapping to
+`lance-index` — see [`ivf_rq_index.md`](./ivf_rq_index.md).
 
 ---
 
@@ -384,6 +392,11 @@ metric used during search. Mismatched metrics produce invalid results.
 ---
 
 ## End-to-End Vector Search Flow
+
+The block diagram below is a tl;dr. For a thorough stage-by-stage trace — how
+the Scanner is configured, how IVF partitions are selected, how each
+encoding reads vectors within a partition, and when/how refinement kicks
+in — see [`search_path.md`](./search_path.md).
 
 ```
   User: table.vector_search([0.1, 0.2, ...]).limit(10).nprobes(20).execute()
